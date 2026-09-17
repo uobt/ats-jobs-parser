@@ -30,7 +30,7 @@ import json as jsonlib
 from dataclasses import dataclass, field
 from typing import Any
 
-USER_AGENT = ("outbound-os-jobs/0.1 (+hiring-signal collector; contact via site owner)")
+USER_AGENT = ("ats-jobs-parser/0.1 (+hiring-signal collector; contact via site owner)")
 
 # BambooHR отфильтровывает запросы без браузероподобного UA — отдаёт 302 на
 # www.bamboohr.com вместо JSON. Это единственное место, где UA подменяется,

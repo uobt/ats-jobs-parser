@@ -62,7 +62,7 @@ def db_url() -> str | None:
 
 
 def data_dir() -> Path:
-    path = Path(env("OUTBOUND_OS_DATA_DIR") or (ROOT / "data"))
+    path = Path(env("ATS_PARSER_DATA_DIR") or (ROOT / "data"))
     path.mkdir(parents=True, exist_ok=True)
     return path
 
