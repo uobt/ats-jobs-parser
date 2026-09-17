@@ -1,0 +1,4 @@
+PyYAML>=6.0
+python-dotenv>=1.0
+tldextract>=5.1
+psycopg[binary]>=3.2

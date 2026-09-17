@@ -1,0 +1,21 @@
+# Воркспейсы Instantly. Скопируй в workspaces.yaml и заполни под себя.
+# Рабочий файл в git не хранится: в нём состав воркспейсов и клиентов.
+#
+# Мультиключевая схема с самого начала (план, Часть V, вопрос 5): ключей может
+# быть один, но переделывать схему потом не придётся.
+#
+# В файле лежит ИМЯ переменной окружения, а не сам токен. Токен — только в .env.
+# Ключу достаточно скоупов на чтение: campaigns:read, leads:read, emails:read,
+# accounts:read, workspaces:read.
+
+workspaces:
+  - code: main
+    name: "Main workspace"
+    env_key: INSTANTLY_API_KEY_MAIN
+    active: true
+
+  # Второй воркспейс, выключен — пуллер его пропустит.
+  # - code: secondary
+  #   name: "Secondary workspace"
+  #   env_key: INSTANTLY_API_KEY_SECONDARY
+  #   active: false

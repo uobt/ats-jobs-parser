@@ -1,0 +1,56 @@
+# Эталоны воронки и стоп-правила. Источник истины для metrics.py.
+# Проекция в БД (core.benchmark) — скриптом sync_benchmarks.py, чтобы SQL-вьюхи
+# ставили диагноз теми же числами, а не своей копией порогов.
+#
+# Источники: Instantly Cold Email Benchmark Report 2026 (данные платформы 01.01–18.12.2025),
+# MailDeck Q2 2026, buzzlead 2026-06 — см. outbound_pipeline_us_eu_2026.md, раздел 5.
+
+benchmarks:
+  reply_rate:            {avg: 0.0343, good: 0.055,  great: 0.107}
+  prr:                   {avg: 0.10,   good: 0.15,   great: 0.20}
+  meeting_from_positive: {avg: 0.25,   good: 0.33,   great: 0.40}
+  positive_rate:         {avg: 0.0034, good: 0.0053, great: 0.0100}
+  meeting_rate:          {avg: 0.0025, good: 0.0055, great: 0.0090}
+  bounce_rate:           {avg: 0.02,   good: 0.015,  great: 0.010}   # ниже — лучше
+  mailbox_health:        {avg: 85,     good: 90,     great: 95}
+
+# Модель значимости: Beta-Binomial, приор Beta(1,1), Монте-Карло.
+significance:
+  prior_alpha: 1
+  prior_beta: 1
+  samples: 50000
+  credible_interval: 0.90
+  decision_metric: positive_rate     # вердикт выносится по нему, не по PRR
+  confirm_metric: meeting_rate       # подтверждающая метрика
+
+# Стоп-правила. Пересчитываются на каждом обновлении, вердикт пишется в
+# core.hypothesis.verdict и analytics.significance.
+stop_rules:
+  min_sample_per_variant: 200        # до этого вердикта нет — «недостаточно данных»
+  inconclusive_at: 600               # >= 600 и p_better < порога → закрываем ветку
+  p_better_threshold: 0.90
+  p_better_threshold_multiple: 0.95  # при 5+ параллельных гипотезах
+  multiple_comparison_from: 5        # сколько одновременных гипотез включают строгий порог
+  min_lift_pp: 0.01                  # минимальный практический лифт, 1 п.п. по positive_rate
+  early_stop_reply_rate: 0.01        # reply_rate < 1% при sent >= 300 → ранняя остановка
+  early_stop_reply_sample: 300
+  min_lead_coverage: 0.85            # доля контактов, видимых на лид-уровне. Instantly
+                                     # удаляет лидов завершённых кампаний; по выжившим
+                                     # (смещённым в сторону ответивших) вердикт запрещён
+
+# Стоп-кран и алерты deliverability. Пороги проекта жёстче рыночных.
+deliverability:
+  bounce_rate_stop: 0.03             # → пауза кампании, разбор базы, гипотеза не засчитывается
+  bounce_stop_min_contacts: 50       # но не раньше 50 контактов: на старте один баунс
+                                     # из десяти — это 10% и ложная тревога, а не проблема базы
+  bounce_rate_target: 0.02
+  mailbox_health_min: 85
+  domain_bounce_7d_max: 0.03
+  bulk_sender_daily_per_root_domain: 5000
+  domain_reply_rate_rotation: 0.007  # < 0.7% reply за 14 дней → домен на ротацию
+  silent_mailbox_days: 2             # 0 отправок при активной кампании → тихая поломка
+
+# Обратная связь P1 → P2: когда разрешено менять веса пайплайна.
+feedback:
+  min_sample_per_cut: 200
+  min_lift_pp: 0.01
